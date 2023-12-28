@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"tannar.moss/backend/internal/constants"
+	"tannar.moss/backend/internal/constant"
 	"tannar.moss/backend/internal/types"
 )
 
@@ -25,25 +25,25 @@ func commonTestSocketErrorFlow(t *testing.T, err error, expectedStatusCode int, 
 
 func TestNewSocketError_withNewInternalServerError_expectConstantsToMatch(t *testing.T) {
 	err := types.NewInternalServerError()
-	commonTestSocketErrorFlow(t, err, constants.InternalServerErrorCode, constants.InternalServerErrorName)
+	commonTestSocketErrorFlow(t, err, constant.InternalServerErrorCode, constant.InternalServerErrorName)
 }
 
 func TestNewSocketError_withNewBadRequestError_expectConstantsToMatch(t *testing.T) {
 	err := types.NewBadRequestError()
-	commonTestSocketErrorFlow(t, err, constants.BadRequestCode, constants.BadRequestName)
+	commonTestSocketErrorFlow(t, err, constant.BadRequestCode, constant.BadRequestName)
 }
 
 func TestNewSocketError_withTestNewInvalidInputError_expectConstantsToMatch(t *testing.T) {
 	err := types.NewInvalidInputError()
-	commonTestSocketErrorFlow(t, err, constants.InvalidInputCode, constants.InvalidInputErrorName)
+	commonTestSocketErrorFlow(t, err, constant.InvalidInputCode, constant.InvalidInputErrorName)
 }
 
 func TestNewSocketError_withTestNewNotImplementedError_expectConstantsToMatch(t *testing.T) {
 	err := types.NewNotImplementedError()
-	commonTestSocketErrorFlow(t, err, constants.NotImplementedCode, constants.NotImplementedErrorName)
+	commonTestSocketErrorFlow(t, err, constant.NotImplementedCode, constant.NotImplementedErrorName)
 }
 
 func TestNewSocketError_withTestNewNoTFoundOrNoRecordError_expectConstantsToMatch(t *testing.T) {
 	err := types.NewNoTFoundOrNoRecordError()
-	commonTestSocketErrorFlow(t, err, constants.NotFoundCode, constants.NotFoundErrorName)
+	commonTestSocketErrorFlow(t, err, constant.NotFoundCode, constant.NotFoundErrorName)
 }

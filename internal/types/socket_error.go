@@ -1,6 +1,6 @@
 package types
 
-import "tannar.moss/backend/internal/constants"
+import "tannar.moss/backend/internal/constant"
 
 type SocketError struct {
 	statusCode int
@@ -23,25 +23,25 @@ func (e *SocketError) StatusCode() int {
 }
 
 func NewInternalServerError() error {
-	return NewSocketError(constants.InternalServerErrorCode, constants.InternalServerErrorName)
+	return NewSocketError(constant.InternalServerErrorCode, constant.InternalServerErrorName)
 }
 
 func NewBadRequestError() error {
-	return NewSocketError(constants.BadRequestCode, constants.BadRequestName)
+	return NewSocketError(constant.BadRequestCode, constant.BadRequestName)
 }
 
 func NewInvalidInputError() error {
-	return NewSocketError(constants.InvalidInputCode, constants.InvalidInputErrorName)
+	return NewSocketError(constant.InvalidInputCode, constant.InvalidInputErrorName)
 }
 
 func NewNotImplementedError() error {
-	return NewSocketError(constants.NotImplementedCode, constants.NotImplementedErrorName)
+	return NewSocketError(constant.NotImplementedCode, constant.NotImplementedErrorName)
 }
 
 func NewNoTFoundOrNoRecordError() error {
-	return NewSocketError(constants.NotFoundCode, constants.NotFoundErrorName)
+	return NewSocketError(constant.NotFoundCode, constant.NotFoundErrorName)
 }
 
 func NewUnauthorizedError() error {
-	return NewSocketError(constants.UnauthorizedCode, constants.UnauthorizedRequestName)
+	return NewSocketError(constant.UnauthorizedCode, constant.UnauthorizedRequestName)
 }

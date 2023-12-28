@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
-	"tannar.moss/backend/internal/constants"
+	"tannar.moss/backend/internal/constant"
 	"tannar.moss/backend/internal/types"
 )
 
@@ -67,7 +67,7 @@ func GetCurrentDateFormatedForInsertingIntoDB(t time.Time) string {
 
 func FormatErrorAPIGatewayResponse(err error) *events.APIGatewayProxyResponse {
 
-	statusCode := constants.InternalServerErrorCode
+	statusCode := constant.InternalServerErrorCode
 	errorDescription := "An unexpected error has occurred"
 	if err, ok := err.(*types.SocketError); ok {
 		statusCode = err.StatusCode()

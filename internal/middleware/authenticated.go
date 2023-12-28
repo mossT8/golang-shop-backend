@@ -1,4 +1,4 @@
-package middlewares
+package middleware
 
 import (
 	"tannar.moss/backend/internal/types"

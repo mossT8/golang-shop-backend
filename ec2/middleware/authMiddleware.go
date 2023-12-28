@@ -1,8 +1,8 @@
-package middlewares
+package middleware
 
 import (
 	"github.com/gofiber/fiber/v2"
-	internalMiddleware "tannar.moss/backend/internal/middlewares"
+	internalMiddleware "tannar.moss/backend/internal/middleware"
 )
 
 func IsAuthenticated(c *fiber.Ctx) error {
