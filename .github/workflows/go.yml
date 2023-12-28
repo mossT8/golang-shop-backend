@@ -24,14 +24,4 @@ jobs:
       run: go test -v ./...
 
     - name: Build Lambda
-      run:     
-        - cd ./lambda/auth/
-        - go get -d -v
-        - go build  main.go
-
-    - name: Build EC2
-      run: 
-        - cd ./ec2/
-        - go get -d -v
-        - go build  main.go
-      -
+      run: go build -v ./...
