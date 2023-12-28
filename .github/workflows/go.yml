@@ -27,11 +27,11 @@ jobs:
       run:     
         - cd ./lambda/auth/
         - go get -d -v
-        - go build -o ../../shop-auth-api-lambda main.go
+        - go build  main.go
 
     - name: Build EC2
       run: 
         - cd ./ec2/
         - go get -d -v
-        - go build -o ../../shop-ec2-instance main.go
+        - go build  main.go
       -
