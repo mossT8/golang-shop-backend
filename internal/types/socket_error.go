@@ -2,8 +2,6 @@ package types
 
 import "tannar.moss/backend/internal/constants"
 
-
-
 type SocketError struct {
 	statusCode int
 	message    string
@@ -42,4 +40,8 @@ func NewNotImplementedError() error {
 
 func NewNoTFoundOrNoRecordError() error {
 	return NewSocketError(constants.NotFoundCode, constants.NotFoundErrorName)
+}
+
+func NewUnauthorizedError() error {
+	return NewSocketError(constants.UnauthorizedCode, constants.UnauthorizedRequestName)
 }
