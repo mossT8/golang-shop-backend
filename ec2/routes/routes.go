@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"tannar.moss/backend/ec2/controller"
+	"tannar.moss/backend/ec2/middlewares"
 )
 
 func Setup(app *fiber.App, controller controller.InternalPluginController) {
@@ -10,7 +11,7 @@ func Setup(app *fiber.App, controller controller.InternalPluginController) {
 	app.Post("/api/register", controller.Register())
 	app.Post("/api/login", controller.Login())
 
-	//app.Use(middlewares.IsAuthenticated)
+	app.Use(middlewares.IsAuthenticated)
 
 	// management routes
 	app.Put("/api/users/info", controller.UpdateInfo())

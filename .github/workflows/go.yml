@@ -25,7 +25,7 @@ jobs:
 
     - name: Build Lambda
       run:     
-        - cd ./lambdas/auth/
+        - cd ./lambda/auth/
         - go get -d -v
         - go build -o ../../shop-auth-api-lambda main.go
 
