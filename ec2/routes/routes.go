@@ -1,17 +1,47 @@
 package routes
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"tannar.moss/backend/ec2/controller"
 	"tannar.moss/backend/ec2/middleware"
+	"tannar.moss/backend/internal/logger"
+	"tannar.moss/backend/internal/repository"
+	"tannar.moss/backend/internal/repository/mysql"
+	"tannar.moss/backend/internal/service"
 )
 
 func Setup(app *fiber.App, controller controller.InternalPluginController) {
+	// todo: remove hardcode databse config and use aws secret
+	genericUserConfig := mysql.DatabaseConfig{
+		Host:              "localhost",
+		Port:              5432,
+		RequestTimeout:    30,
+		ConnectionTimeout: 10,
+		Dialect:           "mysql",
+		Database:          "go_admin",
+		Username:          "root",
+		Password:          "root",
+	}
+	logger := logger.NewSimpleLogger("DEBUG", false)
+	dbConn, err := mysql.NewDbConnection(genericUserConfig, genericUserConfig)
+	if err != nil {
+		logger.Errorf("Unabled to connect to database: %s", err.Error())
+		return
+	}
+
+	// setup middleware
+	userRepo := repository.NewMySqlUserRepository(logger, *dbConn)
+	validatorService := service.NewValidator(logger, *validator.New())
+	authService := service.NewAuthService(validatorService, userRepo, logger)
+
 	// auth routes
 	app.Post("/api/register", controller.Register())
 	app.Post("/api/login", controller.Login())
 
-	app.Use(middleware.IsAuthenticated)
+	app.Use(func(c *fiber.Ctx) error {
+		return middleware.IsAuthenticated(c, authService)
+	})
 
 	// management routes
 	app.Put("/api/users/info", controller.UpdateInfo())

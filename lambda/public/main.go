@@ -9,7 +9,7 @@ import (
 )
 
 var invokeCount = 0
-var MAX_INVOKE = 0
+var MAX_INVOKE = 15
 
 func handlerEvent(_ context.Context, event events.APIGatewayWebsocketProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	invokeCount++

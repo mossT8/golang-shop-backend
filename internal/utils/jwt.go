@@ -1,18 +1,37 @@
 package utils
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-func GenerateJwt(issuer string, secretKey string) (string, error) {
+func GenerateJwt(issuer string, secretKey string) (string, int64, error) {
+	expireAt := time.Now().Add(time.Hour * 24).Unix()
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Issuer:    issuer,
-		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), // 1 day
+		ExpiresAt: expireAt, // 1 day
+	})
+	jwt, err := claims.SignedString([]byte(secretKey))
+	return jwt, expireAt, err
+}
+
+func GetIssuerFromJwt(tokenString string, secretKey string) (string, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secretKey), nil
 	})
 
-	return claims.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", err
+	}
+
+	claims, ok := token.Claims.(*jwt.StandardClaims)
+	if !ok {
+		return "", fmt.Errorf("Invalid JWT claims")
+	}
+
+	return claims.Issuer, nil
 }
 
 func ParseJwt(cookie string, secretKey string) (string, error) {

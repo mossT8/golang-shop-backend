@@ -9,7 +9,7 @@ import (
 func TestGenerateJwt(t *testing.T) {
 	secretKey := "secret"
 	issuer := "1"
-	token, err := utils.GenerateJwt(issuer, secretKey)
+	token, _, err := utils.GenerateJwt(issuer, secretKey)
 	if err != nil {
 		t.Fatalf("Error generating JWT: %v", err)
 	}
@@ -25,7 +25,7 @@ func TestParseJwt(t *testing.T) {
 	secretKey := "secret"
 	issuer := "me"
 	// Generate a token for testing
-	testToken, err := utils.GenerateJwt(issuer, secretKey)
+	testToken, _, err := utils.GenerateJwt(issuer, secretKey)
 	if err != nil {
 		t.Fatalf("Error generating test JWT: %v", err)
 	}

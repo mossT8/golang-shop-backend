@@ -2,13 +2,13 @@ package middleware
 
 import (
 	"github.com/gofiber/fiber/v2"
-	internalMiddleware "tannar.moss/backend/internal/middleware"
+	internalService "tannar.moss/backend/internal/service"
 )
 
-func IsAuthenticated(c *fiber.Ctx) error {
+func IsAuthenticated(c *fiber.Ctx, service internalService.Auth) error {
 	jwt := c.Cookies("jwt")
 
-	err := internalMiddleware.IsAuthenticated(jwt)
+	err := service.IsAuthenticated(jwt)
 	if err != nil {
 		return err
 	}

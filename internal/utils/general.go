@@ -104,6 +104,10 @@ func BoolToInt(varaible bool) int {
 	return 0
 }
 
+func UintToString(variable uint64) string {
+	return fmt.Sprintf("%d", variable)
+}
+
 func FormatJSONString(input string) string {
 	var data map[string]interface{}
 	err := json.Unmarshal([]byte(input), &data)
