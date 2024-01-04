@@ -2,10 +2,7 @@ module tannar.moss/backend
 
 go 1.21.1
 
-require (
-	github.com/aws/aws-lambda-go v1.43.0
-	github.com/gofiber/fiber v1.14.6
-)
+require github.com/aws/aws-lambda-go v1.43.0
 
 require (
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
@@ -25,8 +22,6 @@ require (
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gofiber/fiber/v2 v2.51.0
-	github.com/gofiber/utils v0.0.10 // indirect
-	github.com/gorilla/schema v1.1.0 // indirect
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
