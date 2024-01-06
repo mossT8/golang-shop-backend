@@ -17,6 +17,7 @@ type Auth interface {
 	Logout(jwt string) error
 	Register(body string) (*model.LoginResponse, error)
 	Login(body string) (*model.LoginResponse, error)
+	Shutdown()
 }
 
 type SimpleAuth struct {
@@ -25,6 +26,12 @@ type SimpleAuth struct {
 	Logger    logger.Logger
 }
 
+func (this *SimpleAuth) Shutdown() {
+	this.UserRepo.Shutdown()
+	this = nil
+}
+
+const CUSTOMER_ROLE_ID = 2
 const SECRET = "SECRET"
 
 func NewAuthService(validator Validator, userReo repository.UserRepository, logger logger.Logger) Auth {
@@ -83,8 +90,7 @@ func (this *SimpleAuth) IsAuthorized(jwt string, page string) error {
 }
 
 func (this SimpleAuth) Login(body string) (*model.LoginResponse, error) {
-	var loginRequest model.LoginRequest
-	err := this.Validator.MarshalAndValidateLoginRequest(body, loginRequest)
+	loginRequest, err := this.Validator.MarshalAndValidateLoginRequest(body)
 	if err != nil {
 		return nil, err
 	}
@@ -110,17 +116,16 @@ func (this *SimpleAuth) Logout(jwt string) error {
 }
 
 func (this *SimpleAuth) Register(body string) (*model.LoginResponse, error) {
-	var loginRequest model.UserRequest
-	err := this.Validator.MarshalAndValidateLoginRequest(body, loginRequest)
+	registerRequest, err := this.Validator.MarshalAndValidateRegisterRequest(body)
 	if err != nil {
 		return nil, err
 	}
 
-	if loginRequest.ConfirmPassword != loginRequest.Password {
+	if registerRequest.ConfirmPassword != registerRequest.Password {
 		return nil, types.NewInvalidInputError()
 	}
 
-	user, err := this.UserRepo.Register(loginRequest.FirstName, loginRequest.LastName, loginRequest.Email, loginRequest.Password, loginRequest.RoleID)
+	user, err := this.UserRepo.Register(registerRequest.FirstName, registerRequest.LastName, registerRequest.Email, registerRequest.Password, CUSTOMER_ROLE_ID)
 	if err != nil {
 		return nil, err
 	}

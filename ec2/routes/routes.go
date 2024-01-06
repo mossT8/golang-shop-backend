@@ -37,7 +37,7 @@ func Setup(app *fiber.App, controller controller.InternalPluginController) {
 
 	// auth routes
 	app.Post("/api/register", controller.Register())
-	app.Post("/api/login", controller.Login())
+	app.Put("/api/login", controller.Login())
 
 	app.Use(func(c *fiber.Ctx) error {
 		return middleware.IsAuthenticated(c, authService)

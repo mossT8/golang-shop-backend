@@ -22,7 +22,7 @@ func PerformEdit(queryName string, query string, conn mysql.DbConnection, logger
 	}
 	defer preparedStmt.Close()
 
-	_, err = preparedStmt.Exec(args)
+	_, err = preparedStmt.Exec(args...)
 	if err != nil {
 		utils.LogExecutingError(queryName, logger, err)
 		tx.Rollback()

@@ -6,7 +6,6 @@ type UserRequest struct {
 	Email           string `json:"email" validate:"required,gt=0,lte=225"`
 	Password        string `json:"password" validate:"required,gt=0"`
 	ConfirmPassword string `json:"confirm_password" validate:"required,gt=0"`
-	RoleID          uint64 `json:"role_id" validate:"required,gt=0"`
 }
 
 type UserResponse struct {

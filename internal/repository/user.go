@@ -18,11 +18,19 @@ type UserRepository interface {
 	Update(userId uint64, firstName string, lastName string, updatingUserId uint64) (*model.UserResponse, error)
 	ResetPassword(userId uint64, newPassword string, updatingUserId uint64) (*model.UserResponse, error)
 	ResetEmail(userId uint64, newEmail string, updatingUserId uint64) (*model.UserResponse, error)
+	Shutdown()
 }
 
 type MySqlUserRepository struct {
 	DB     mysql.DbConnection
 	Logger logger.Logger
+}
+
+func (this *MySqlUserRepository) Shutdown() {
+	err := this.DB.Close()
+	if err != nil {
+		this.Logger.Errorf("Unabled to close user repo: %s", err.Error())
+	}
 }
 
 func NewMySqlUserRepository(logger logger.Logger, db mysql.DbConnection) UserRepository {
