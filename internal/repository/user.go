@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"time"
 
 	"tannar.moss/backend/internal/logger"
 	"tannar.moss/backend/internal/model"
@@ -26,6 +27,8 @@ type MySqlUserRepository struct {
 	Logger logger.Logger
 }
 
+const MySystemAutoID = 1
+
 func (this *MySqlUserRepository) Shutdown() {
 	err := this.DB.Close()
 	if err != nil {
@@ -40,23 +43,35 @@ func NewMySqlUserRepository(logger logger.Logger, db mysql.DbConnection) UserRep
 	}
 }
 
-func mapStatementToUser(row *sql.Row) (*model.UserResponse, error) {
-	var user *model.UserResponse
-	err := row.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.RoleID)
+func (this *MySqlUserRepository) mapStatementToUser(row *sql.Row) (*model.UserResponse, error) {
+	var user model.UserResponse
+	if row.Err() != nil {
+		return nil, types.NewInternalServerError()
+	}
+	err := row.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.HashedPassword, &user.RoleID, &user.CreatedUser, &user.CreatedAt, &user.UpdatedUser, &user.UpdatedAt, &user.DeletedUser, &user.DeletedAt)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			this.Logger.Debugf("No result back for user: %s", err.Error())
+			return nil, types.NewNoTFoundOrNoRecordError()
+		}
+		this.Logger.Errorf("Unabled to marshal user response: %s", err.Error())
 		return nil, err
 	}
 
-	return user, nil
+	return &user, nil
 }
 
 func (this *MySqlUserRepository) GetByEmail(email string) (*model.UserResponse, error) {
-	stmt, err := flows.GetReaderStatement("GetByEmail", "SELECT * FROM users WHERE email = ?", this.DB, this.Logger)
+	query := "SELECT * FROM users WHERE email = ?"
+	stmt, err := flows.GetReaderStatement("GetByEmail", query, this.DB, this.Logger)
 	if err != nil {
 		return nil, err
 	}
+	this.Logger.Debugf("Running query '%s' with parameter '%s'", query, email)
 
-	user, err := mapStatementToUser(stmt.QueryRow(email))
+	result := stmt.QueryRow(email)
+	user, err := this.mapStatementToUser(result)
+
 	if err != nil {
 		utils.LogExecutingError("GetByEmail", this.Logger, err)
 		return nil, types.NewInternalServerError()
@@ -66,12 +81,13 @@ func (this *MySqlUserRepository) GetByEmail(email string) (*model.UserResponse, 
 }
 
 func (this *MySqlUserRepository) GetByID(userId uint64) (*model.UserResponse, error) {
-	stmt, err := flows.GetReaderStatement("GetByID", "SELECT * FROM users WHERE id = ?", this.DB, this.Logger)
+	query := "SELECT * FROM users WHERE id = ?"
+	stmt, err := flows.GetReaderStatement("GetByID", query, this.DB, this.Logger)
 	if err != nil {
 		return nil, err
 	}
-
-	user, err := mapStatementToUser(stmt.QueryRow(userId))
+	this.Logger.Debugf("Running query '%s' with parameter '%d'", query, userId)
+	user, err := this.mapStatementToUser(stmt.QueryRow(userId))
 	if err != nil {
 		utils.LogExecutingError("GetByID", this.Logger, err)
 		return nil, types.NewInternalServerError()
@@ -86,24 +102,36 @@ func (this *MySqlUserRepository) Register(firstName string, lastName string, ema
 		this.Logger.Errorf("Error creating hashPassword: %s", err.Error())
 		return nil, types.NewInternalServerError()
 	}
-
-	err = flows.PerformEdit(
+	insertedAt := utils.GetCurrentDateFormatedForInsertingIntoDB(time.Now())
+	query := "INSERT INTO users (first_name, last_name, email, hashed_password, role_id, created_user, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+	this.Logger.Debugf("Running query '%s' with parameter '%s', '%s', '%s', '%v', '%d', '%d' and '%s'", query, firstName, lastName, email, hashedPassword, roleId, MySystemAutoID, insertedAt)
+	lastInsertedId, err := flows.PerformEdit(
 		"Register",
-		"INSERT INTO users (first_name, last_name, email, hashed_password, role_id) VALUES (?, ?, ?, ?, ?)",
+		query,
 		this.DB,
 		this.Logger,
-		firstName, lastName, email, hashedPassword, roleId)
+		firstName, lastName, email, hashedPassword, roleId, MySystemAutoID, insertedAt)
 	if err != nil {
 		return nil, err
 	}
 
-	return this.GetByEmail(email)
+	return &model.UserResponse{
+		ID:          uint64(lastInsertedId),
+		FirstName:   firstName,
+		LastName:    lastName,
+		Email:       email,
+		RoleID:      roleId,
+		CreatedUser: MySystemAutoID,
+		CreatedAt:   insertedAt,
+	}, nil
 }
 
 func (this *MySqlUserRepository) Update(userId uint64, firstName string, lastName string, updatingUserId uint64) (*model.UserResponse, error) {
-	err := flows.PerformEdit(
+	query := "UPDATE users SET first_name = ?, last_name = ?, updated_user = ?, updated_at = now() WHERE id = ?"
+	this.Logger.Debugf("Running query '%s' with parameter '%s', '%s', '%d' and '%d'", firstName, lastName, updatingUserId, userId)
+	_, err := flows.PerformEdit(
 		"Update",
-		"UPDATE users SET first_name = ?, last_name = ?, updated_user = ?, updated_at = now() WHERE id = ?",
+		query,
 		this.DB,
 		this.Logger,
 		firstName, lastName, updatingUserId, userId)
@@ -121,9 +149,11 @@ func (this *MySqlUserRepository) ResetPassword(userId uint64, newPassword string
 		return nil, types.NewInternalServerError()
 	}
 
-	err = flows.PerformEdit(
+	query := "UPDATE users SET hashed_password = ?, updated_user = ? WHERE id = ?"
+	this.Logger.Debugf("Running query '%s' with parameter '%v', '%d' and '%d'", hashedPassword, updatingUserId, userId)
+	_, err = flows.PerformEdit(
 		"ResetPassword",
-		"UPDATE users SET hashed_password = ?, updated_user = ? WHERE id = ?",
+		query,
 		this.DB,
 		this.Logger,
 		hashedPassword, updatingUserId, userId)
@@ -135,9 +165,11 @@ func (this *MySqlUserRepository) ResetPassword(userId uint64, newPassword string
 }
 
 func (this *MySqlUserRepository) ResetEmail(userId uint64, newEmail string, updatingUserId uint64) (*model.UserResponse, error) {
-	err := flows.PerformEdit(
+	query := "UPDATE users SET email = ?, updated_user = ? WHERE id = ?"
+	this.Logger.Debugf("Running query '%s' with parameter '%s', '%d' and '%d'", newEmail, updatingUserId, userId)
+	_, err := flows.PerformEdit(
 		"ResetEmail",
-		"UPDATE users SET email = ?, updated_user = ? WHERE id = ?",
+		query,
 		this.DB,
 		this.Logger,
 		newEmail, updatingUserId, userId)

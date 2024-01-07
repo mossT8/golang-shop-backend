@@ -1,31 +1,23 @@
 package main
 
 import (
-	"context"
-
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
-	"tannar.moss/backend/internal/utils"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"tannar.moss/backend/ec2/routes"
 )
 
-var invokeCount = 0
-var MAX_INVOKE = 0
-
-func handlerEvent(_ context.Context, event events.APIGatewayWebsocketProxyRequest) (*events.APIGatewayProxyResponse, error) {
-	invokeCount++
-	if invokeCount >= MAX_INVOKE {
-		// restart
-	}
-	response := processEvent(event)
-
-	return response, nil
-}
-
-func processEvent(event events.APIGatewayWebsocketProxyRequest) *events.APIGatewayProxyResponse {
-
-	return utils.FormatGatewayResponse(200, "Hello World!")
-}
-
 func main() {
-	lambda.Start(handlerEvent)
+	app := fiber.New()
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "*",
+		AllowMethods:     "*",
+		AllowHeaders:     "*",
+		ExposeHeaders:    "Content-Length",
+		AllowCredentials: true,
+	}))
+
+	routes.Setup(app)
+
+	app.Listen(":8000")
 }

@@ -130,9 +130,11 @@ CREATE TABLE users (
 );
 
 -- Insert example data for Users Table
+INSERT INTO users (first_name, last_name, email, hashed_password, role_id, updated_at) VALUES
+('Mr. System', 'Auto', 'system.auto@noreply.com', '', 1, NULL);
 INSERT INTO users (first_name, last_name, email, hashed_password, role_id, created_user, updated_at) VALUES
-('Admin', 'Doe', 'admin.doe@example.com', 'hashed_password', 1, NULL),
-('Customer', 'Doe', 'customr.doe@example.com', 'hashed_password', 2, 1, NULL);
+('Mr. Admin', 'Use', 'admin.doe@example.com', '$2a$14$ZC6xGLDlZw4WWN.pxCd7ROrMVbqDI5WmVu3/dZ8ilDEBOEyan3TDG', 1, 1, NULL),
+('Jane', 'Doe', 'jane.doe@example.com', '$2a$14$ZC6xGLDlZw4WWN.pxCd7ROrMVbqDI5WmVu3/dZ8ilDEBOEyan3TDG', 1, 1, NULL);
 
 -- Create Products Table
 CREATE TABLE products (

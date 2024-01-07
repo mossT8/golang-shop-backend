@@ -15,7 +15,6 @@ func GetReaderStatement(queryName string, query string, conn mysql.DbConnection,
 		utils.LogPreparingError(queryName, logger, err)
 		return nil, types.NewInternalServerError()
 	}
-	defer stmt.Close()
 
 	return stmt, nil
 }

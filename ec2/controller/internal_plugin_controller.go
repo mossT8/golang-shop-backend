@@ -1,10 +1,18 @@
 package controller
 
 import (
+	"time"
+
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"tannar.moss/backend/internal/logger"
+	"tannar.moss/backend/internal/repository"
+	"tannar.moss/backend/internal/repository/mysql"
+	"tannar.moss/backend/internal/service"
 )
 
 type InternalPluginController interface {
+	GetAuthService() service.Auth
 	Register() fiber.Handler
 	Login() fiber.Handler
 	User() fiber.Handler
@@ -40,6 +48,11 @@ type InternalPluginController interface {
 }
 
 type InternalPluginControllerImpl struct {
+	AuthService service.Auth
+}
+
+func (this *InternalPluginControllerImpl) GetAuthService() service.Auth {
+	return this.AuthService
 }
 
 // AddOrder implements InternalPluginController.
@@ -153,8 +166,22 @@ func (InternalPluginControllerImpl) GetUser() fiber.Handler {
 }
 
 // Login implements InternalPluginController.
-func (InternalPluginControllerImpl) Login() fiber.Handler {
-	panic("unimplemented")
+func (this *InternalPluginControllerImpl) Login() fiber.Handler {
+	return func(context *fiber.Ctx) error {
+		loginResponse, err := this.AuthService.Login(string(context.Body()))
+
+		if err != nil {
+			return context.JSON(err)
+		}
+		cookie := fiber.Cookie{
+			Name:     "jwt",
+			Value:    loginResponse.Jwt,
+			Expires:  time.Now().Add(time.Hour * 24),
+			HTTPOnly: true,
+		}
+		context.Cookie(&cookie)
+		return context.JSON(loginResponse)
+	}
 }
 
 // Logout implements InternalPluginController.
@@ -162,9 +189,22 @@ func (InternalPluginControllerImpl) Logout() fiber.Handler {
 	panic("unimplemented")
 }
 
-// Register implements InternalPluginController.
-func (InternalPluginControllerImpl) Register() fiber.Handler {
-	panic("unimplemented")
+func (this InternalPluginControllerImpl) Register() fiber.Handler {
+	return func(context *fiber.Ctx) error {
+		loginResponse, err := this.AuthService.Register(string(context.Body()))
+
+		if err != nil {
+			return context.JSON(err)
+		}
+		cookie := fiber.Cookie{
+			Name:     "jwt",
+			Value:    loginResponse.Jwt,
+			Expires:  time.Now().Add(time.Hour * 24),
+			HTTPOnly: true,
+		}
+		context.Cookie(&cookie)
+		return context.JSON(loginResponse)
+	}
 }
 
 // UpdateInfo implements InternalPluginController.
@@ -203,5 +243,30 @@ func (InternalPluginControllerImpl) User() fiber.Handler {
 }
 
 func NewInternalPluginController() InternalPluginController {
-	return InternalPluginControllerImpl{}
+	// todo: remove hardcode databse config and use aws secret
+	genericUserConfig := mysql.DatabaseConfig{
+		Host:              "localhost",
+		Port:              5432,
+		RequestTimeout:    30,
+		ConnectionTimeout: 10,
+		Dialect:           "mysql",
+		Database:          "go_admin",
+		Username:          "root",
+		Password:          "root",
+	}
+	logger := logger.NewSimpleLogger("DEBUG", false)
+	dbConn, err := mysql.NewDbConnection(genericUserConfig, genericUserConfig)
+	if err != nil {
+		logger.Errorf("Unabled to connect to database: %s", err.Error())
+		panic("DB down!!!")
+	}
+
+	// setup middleware
+	userRepo := repository.NewMySqlUserRepository(logger, *dbConn)
+	validatorService := service.NewValidator(logger, *validator.New())
+	authService := service.NewAuthService(validatorService, userRepo, logger)
+
+	return &InternalPluginControllerImpl{
+		AuthService: authService,
+	}
 }

@@ -31,3 +31,25 @@ func TestLambdaHandler_withPostRequest_shouldSuccessfullProcess(t *testing.T) {
 		t.Log(response.Body)
 	}
 }
+
+func TestLambdaHandler_withPutRequest_shouldSuccessfullProcess(t *testing.T) {
+
+	os.Setenv("LOG_LEVEL", "DEBUG")
+	os.Setenv("PUSH_TO_SUMO", "false")
+
+	event := events.APIGatewayWebsocketProxyRequest{
+		HTTPMethod: "PUT",
+		Path:       "/api/login",
+		Body: `{
+			"username": "admin.doe@example.com",
+			"password": "password123"
+		}`,
+	}
+
+	response, err := handlerEvent(nil, event)
+	if err != nil {
+		t.Errorf("LambdaHandler() error = %v", err)
+	} else {
+		t.Log(response.Body)
+	}
+}
