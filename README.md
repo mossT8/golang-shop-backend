@@ -1,5 +1,5 @@
 # Project Change Log
-## v1.3.0 - (4 Changes)
+## v1.3.0 - (3 Changes)
 - Plugged EC2 into internal service layers
 - Updated github/workflows to be one for each lambda and then the ec2 version of project
 - Added better logging to user repository layer
