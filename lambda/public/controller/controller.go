@@ -6,26 +6,29 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"tannar.moss/backend/internal/constant"
 	"tannar.moss/backend/internal/logger"
 	"tannar.moss/backend/internal/repository"
 	"tannar.moss/backend/internal/repository/mysql"
 	"tannar.moss/backend/internal/service"
 	"tannar.moss/backend/internal/types"
-	"tannar.moss/backend/lambda"
 	"tannar.moss/backend/lambda/public/model"
 )
 
+type Controller interface {
+	PreProcess(event events.APIGatewayWebsocketProxyRequest, loglevel string, pushLogs bool) (string, string, string, error)
+	Process(requestType string, path string, body string) (*model.Response, error)
+	PostProcess(response model.Response) (string, error)
+	PublishLogs()
+	Shutdown()
+}
+
 type PublicController struct {
-	Service service.Auth
+	Service service.Public
 	Logger  logger.Logger
 }
 
-const (
-	PUT  = "PUT"
-	POST = "POST"
-)
-
-func NewPublicController(logLevel string, publishLogs bool) (lambda.Controller, error) {
+func NewPublicController(logLevel string, publishLogs bool) (Controller, error) {
 	// todo: remove hardcode databse config and use aws secret
 	genericUserConfig := mysql.DatabaseConfig{
 		Host:              "localhost",
@@ -46,45 +49,45 @@ func NewPublicController(logLevel string, publishLogs bool) (lambda.Controller, 
 	logger := logger.NewSimpleLogger(logLevel, publishLogs)
 	userRepo := repository.NewMySqlUserRepository(logger, *dbConn)
 	validatorService := service.NewValidator(logger, *validator.New())
-	authService := service.NewAuthService(validatorService, userRepo, logger)
+	publicService := service.NewPublicService(validatorService, userRepo, logger)
 
 	return &PublicController{
-		Service: authService,
+		Service: publicService,
 		Logger:  logger,
 	}, nil
 }
 
-func (this *PublicController) PostProcess(response model.Response) (string, error) {
+func (c *PublicController) PostProcess(response model.Response) (string, error) {
 	responseString, err := json.Marshal(response)
 	if err != nil {
-		this.Logger.Errorf("Error converting response to string: %v", err)
+		c.Logger.Errorf("Error converting response to string: %v", err)
 		return "", err
 	}
 
-	this.Logger.Infof("Response: %s", responseString)
+	c.Logger.Infof("Response: %s", responseString)
 	return string(responseString), nil
 }
 
-func (this *PublicController) PreProcess(event events.APIGatewayWebsocketProxyRequest, loglevel string, pushLogs bool) (string, string, string, error) {
-	this.Logger.SetTraceId(uuid.NewString())
+func (c *PublicController) PreProcess(event events.APIGatewayWebsocketProxyRequest, loglevel string, pushLogs bool) (string, string, string, error) {
+	c.Logger.SetTraceId(uuid.NewString())
 	return event.HTTPMethod, event.Path, event.Body, nil
 }
 
-func (this *PublicController) Process(requestType string, path string, body string) (*model.Response, error) {
+func (c *PublicController) Process(requestType string, path string, body string) (*model.Response, error) {
 	switch requestType {
-	case "POST":
-		return this.handlePostRequest(path, body)
-	case "PUT":
-		return this.handlePutRequest(path, body)
+	case constant.POST:
+		return c.handlePostRequest(path, body)
+	case constant.PUT:
+		return c.handlePutRequest(path, body)
 	default:
 		return nil, types.NewNotImplementedError()
 	}
 }
 
-func (this *PublicController) handlePostRequest(path string, body string) (*model.Response, error) {
+func (c *PublicController) handlePostRequest(path string, body string) (*model.Response, error) {
 	switch path {
 	case "/api/register":
-		loginResponse, err := this.Service.Register(body)
+		loginResponse, err := c.Service.Register(body)
 		if err != nil {
 			return nil, err
 		}
@@ -96,10 +99,10 @@ func (this *PublicController) handlePostRequest(path string, body string) (*mode
 	}
 }
 
-func (this *PublicController) handlePutRequest(path string, body string) (*model.Response, error) {
+func (c *PublicController) handlePutRequest(path string, body string) (*model.Response, error) {
 	switch path {
 	case "/api/login":
-		loginResponse, err := this.Service.Login(body)
+		loginResponse, err := c.Service.Login(body)
 		if err != nil {
 			return nil, err
 		}
@@ -112,11 +115,11 @@ func (this *PublicController) handlePutRequest(path string, body string) (*model
 	}
 }
 
-func (this *PublicController) PublishLogs() {
-	this.Logger.Info("To do add SQS for sumo logging")
+func (c *PublicController) PublishLogs() {
+	c.Logger.PublishSumoLogs()
 }
 
-func (this *PublicController) Shutdown() {
-	this.Service.Shutdown()
-	this = nil
+func (c *PublicController) Shutdown() {
+	c.Service.Shutdown()
+	c = nil
 }

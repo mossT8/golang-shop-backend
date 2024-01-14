@@ -13,45 +13,46 @@ func Setup(app *fiber.App) {
 	app.Put("/api/login", controller.Login())
 
 	app.Use(func(c *fiber.Ctx) error {
-		return middleware.IsAuthenticated(c, controller.GetAuthService())
+		return middleware.IsAuthenticated(c, controller.GetPublicService())
 	})
 
-	// management routes
+	// private routes
 	app.Put("/api/users/info", controller.UpdateInfo())
 	app.Put("/api/users/password", controller.UpdatePassword())
 
-	app.Get("/api/user", controller.User())
-	app.Post("/api/logout", controller.Logout())
+	/*
+		app.Get("/api/user", controller.User())
+		app.Post("/api/logout", controller.Logout())
 
-	app.Get("/api/users", controller.AllUsers())
-	app.Get("/api/users/:id", controller.GetUser())
-	app.Post("/api/users", controller.CreateUser())
-	app.Put("/api/users/:id", controller.UpdateUser())
-	app.Delete("/api/users/:id", controller.DeleteUser())
+		app.Get("/api/users", controller.AllUsers())
+		app.Get("/api/users/:id", controller.GetUser())
+		app.Post("/api/users", controller.CreateUser())
+		app.Put("/api/users/:id", controller.UpdateUser())
+		app.Delete("/api/users/:id", controller.DeleteUser())
 
-	app.Get("/api/roles", controller.AllRoles())
-	app.Get("/api/roles/:id", controller.GetRole())
-	app.Post("/api/roles", controller.CreateRole())
-	app.Put("/api/roles/:id", controller.UpdateRole())
-	app.Delete("/api/roles/:id", controller.DeleteRole())
+		app.Get("/api/roles", controller.AllRoles())
+		app.Get("/api/roles/:id", controller.GetRole())
+		app.Post("/api/roles", controller.CreateRole())
+		app.Put("/api/roles/:id", controller.UpdateRole())
+		app.Delete("/api/roles/:id", controller.DeleteRole())
 
-	app.Get("/api/permissions", controller.AllPermissions())
+		app.Get("/api/permissions", controller.AllPermissions())
 
-	app.Get("/api/products", controller.AllProducts())
-	app.Get("/api/products/:id", controller.GetProduct())
-	app.Post("/api/products", controller.CreateProduct())
-	app.Put("/api/products/:id", controller.UpdateProduct())
-	app.Delete("/api/products/:id", controller.DeleteProduct())
+		app.Get("/api/products", controller.AllProducts())
+		app.Get("/api/products/:id", controller.GetProduct())
+		app.Post("/api/products", controller.CreateProduct())
+		app.Put("/api/products/:id", controller.UpdateProduct())
+		app.Delete("/api/products/:id", controller.DeleteProduct())
 
-	app.Post("/api/upload", controller.Upload())
-	app.Static("/api/uploads", "/uploads")
+		app.Post("/api/upload", controller.Upload())
+		app.Static("/api/uploads", "/uploads")
 
-	app.Get("/api/chart", controller.Chart())
+		app.Get("/api/chart", controller.Chart())
 
-	// orders route
-	app.Get("/api/orders", controller.AllOrders())
-	app.Get("/api/order/:id", controller.GetOrder())
-	app.Post("/api/export", controller.Export())
-	app.Put("/api/order/:id", controller.UpdateOrder())
-	app.Post("/api/order", controller.CreateOrder())
+		// orders route
+		app.Get("/api/orders", controller.AllOrders())
+		app.Get("/api/order/:id", controller.GetOrder())
+		app.Post("/api/export", controller.Export())
+		app.Put("/api/order/:id", controller.UpdateOrder())
+		app.Post("/api/order", controller.CreateOrder()) */
 }

@@ -1,8 +1,12 @@
 package model
 
+type UserUpdateRequest struct {
+	FirstName string `json:"first_name" validate:"required,gt=0,lte=50"`
+	LastName  string `json:"last_name" validate:"required,gt=0,lte=50"`
+}
+
 type UserRequest struct {
-	FirstName       string `json:"first_name" validate:"required,gt=0,lte=50"`
-	LastName        string `json:"last_name" validate:"required,gt=0,lte=50"`
+	UserUpdateRequest
 	Email           string `json:"email" validate:"required,gt=0,lte=225"`
 	Password        string `json:"password" validate:"required,gt=0"`
 	ConfirmPassword string `json:"confirm_password" validate:"required,gt=0"`

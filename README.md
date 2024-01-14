@@ -1,4 +1,10 @@
 # Project Change Log
+
+## v1.4.0 - (3 Changes)
+- Added Private service layer for user interaction with system after logging in
+- Added Update password route
+- Added Update user info route
+
 ## v1.3.0 - (3 Changes)
 - Plugged EC2 into internal service layers
 - Updated github/workflows to be one for each lambda and then the ec2 version of project

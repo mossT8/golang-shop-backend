@@ -5,7 +5,7 @@ import (
 	internalService "tannar.moss/backend/internal/service"
 )
 
-func IsAuthorized(c *fiber.Ctx, page string, service internalService.Auth) error {
+func IsAuthorized(c *fiber.Ctx, page string, service internalService.Public) error {
 	jwt := c.Cookies("jwt")
 
 	err := service.IsAuthorized(jwt, page)

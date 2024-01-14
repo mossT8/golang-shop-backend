@@ -20,3 +20,10 @@ const (
 	NotImplementedCode      = http.StatusNotImplemented
 	NotImplementedErrorName = "Not Implemented"
 )
+
+const (
+	PUT    = "PUT"
+	POST   = "POST"
+	GET    = "GET"
+	DELETE = "DELETE"
+)
